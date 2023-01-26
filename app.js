@@ -28,8 +28,9 @@ const articleSchema = {
 const Article = mongoose.model("Article", articleSchema);
 
 //TODO
+app.route("/articles")
 
-app.get("/articles", function(req,res){
+.get(function(req,res){
     Article.find(function(err, foundArticles){
         if(!err){
             //console.log(foundArticles);
@@ -40,7 +41,7 @@ app.get("/articles", function(req,res){
     });
 })
 
-app.post("/articles", function(req,res){
+.post(function(req,res){
     // console.log(req.body.title);
     // console.log(req.body.content);
 
@@ -58,7 +59,7 @@ app.post("/articles", function(req,res){
     });
 })
 
-app.delete("/articles", function(req,res){
+.delete(function(req,res){
     Article.deleteMany(function(err){
         if(!err){
             res.send("successfully deleted all articles");
@@ -66,6 +67,68 @@ app.delete("/articles", function(req,res){
             res.send(err);
         }
     });
+});
+
+//target specific articles
+
+app.route("/articles/:articleTitle")
+
+.get(function(req, res){
+    const articleTitle = req.params.articleTitle;
+    Article.findOne({title: articleTitle}, function(err, article){
+      if (article){
+        //const jsonArticle = JSON.stringify(article);
+        res.send(article);
+      } else {
+        res.send("No article with that title found.");
+      }
+    });
+  })
+
+.put(function(req,res){
+    Article.findOneAndUpdate(
+        {title: req.params.articleTitle},
+        {
+            title: req.body.title, 
+            content: req.body.content
+        },
+        {overwrite: true},
+        function(err){
+            if(!err){
+                res.send("update succesfully");
+            }else{
+                res.send(err);
+            }
+
+        }
+    )
+})
+
+.patch(function(req,res){
+    Article.findOneAndUpdate(
+        {title: req.params.articleTitle},
+        {$set : req.body},
+        function(err){
+            if(!err){
+                res.send("succesfully updated");
+            }else{
+                res.send(err);
+            }
+        }
+    );
+})
+
+.delete(function(req,res){
+    Article.findOneAndDelete(
+        {title: req.params.articleTitle},
+        function(err){
+            if(!err){
+                res.send("succesfully deleted");
+            }else{
+                res.send(err);
+            }
+        }
+    );
 });
 
 app.listen(3000, function() {
